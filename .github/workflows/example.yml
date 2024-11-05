@@ -66,13 +66,17 @@ jobs:
             }' -f org="thomasthorntoncloud" -F num=2 -q '.data.organization.projectV2.id')
 
           ITEM_ID=$(gh api graphql -f query='
-            query {
-              repository(owner: "thomasthorntoncloud", name: "test-auto-shutdown") {
-                issue(number: ${{ github.event.issue.number }}) {
-                  id
+            query($owner: String!, $repo: String!, $number: Int!) {
+              repository(owner: $owner, name: $repo) {
+                issue(number: $number) {
+                  projectV2Items(first: 1) {
+                    nodes {
+                      id
+                    }
+                  }
                 }
               }
-            }' -q '.data.repository.issue.id')
+            }' -f owner="thomasthorntoncloud" -f repo="test-auto-shutdown" -F number=${{ github.event.issue.number }} -q '.data.repository.issue.projectV2Items.nodes[0].id')
 
           echo "PROJECT_ID: $PROJECT_ID"
           echo "ITEM_ID: $ITEM_ID"
@@ -85,6 +89,14 @@ jobs:
                   fields(first: 20) {
                     nodes {
                       ... on ProjectV2Field {
+                        id
+                        name
+                      }
+                      ... on ProjectV2IterationField {
+                        id
+                        name
+                      }
+                      ... on ProjectV2SingleSelectField {
                         id
                         name
                       }
