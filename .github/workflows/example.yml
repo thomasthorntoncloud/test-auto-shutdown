@@ -200,7 +200,7 @@ jobs:
           CURRENT_TITLE=$(gh issue view ${{ github.event.issue.number }} --json title -q .title)
 
           # Prepare the new information to append
-          NEW_INFO="${{ steps.extract_values.outputs.business_area }} - ${{ steps.extract_values.outputs.team_name }} - Env: ${{ steps.extract_values.outputs.environments_requested }}"
+          NEW_INFO="${{ steps.extract_values.outputs.business_area }} - ${{ steps.extract_values.outputs.team_name }} - ${{ steps.extract_values.outputs.environments_requested }}"
 
           # Check if the title already contains the new information
           if [[ "$CURRENT_TITLE" != *"$NEW_INFO"* ]]; then
