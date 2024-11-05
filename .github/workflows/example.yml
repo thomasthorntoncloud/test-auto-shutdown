@@ -50,7 +50,7 @@ jobs:
           echo "past_11pm=$PAST_11PM" >> $GITHUB_OUTPUT
 
           BUSINESS_AREA=$(sed -n '/^### Business area/,/^###/p' body.txt | tail -n +2 | head -n -1 | tr -d '[:space:]')
-          TEAM_NAME=$(sed -n '/^### Team/Application Name/,/^###/p' body.txt | tail -n +2 | head -n -1 | tr -d '[:space:]')
+          TEAM_NAME=$(sed -n '/^### Team\/Application Name/,/^###/p' body.txt | tail -n +2 | head -n -1 | tr -d '[:space:]')
           ENVIRONMENTS_REQUESTED=$(sed -n '/^### Environment/,/^###/p' body.txt | tail -n +2 | head -n -1 | tr -d '[:space:]')
 
           echo "business_area=$BUSINESS_AREA" >> $GITHUB_OUTPUT
