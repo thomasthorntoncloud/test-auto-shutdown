@@ -59,46 +59,14 @@ jobs:
 
       - name: Update GitHub Project
         run: |
-          # Get project ID
-          PROJECT_ID=$(gh api graphql -f query='
-            query($org: String!, $num: Int!) {
-              organization(login: $org) { projectV2(number: $num) { id } }
-            }' -f org="thomasthorntoncloud" -F num=2 -q '.data.organization.projectV2.id')
+          # ... (previous code remains the same)
 
-          ITEM_ID=$(gh api graphql -f query='
-            query {
-              repository(owner: "thomasthorntoncloud", name: "test-auto-shutdown") {
-                issue(number: ${{ github.event.issue.number }}) {
-                  id
-                }
-              }
-            }' -q '.data.repository.issue.id')
+          # Convert dates to ISO 8601 format
+          START_DATE=$(date -d "${{ steps.extract_values.outputs.start_date }}" +%Y-%m-%d)
+          END_DATE=$(date -d "${{ steps.extract_values.outputs.end_date }}" +%Y-%m-%d)
 
-          echo "PROJECT_ID: $PROJECT_ID"
-          echo "ITEM_ID: $ITEM_ID"
-
-          # Get field IDs
-          FIELDS=$(gh api graphql -f query='
-            query($projectId: ID!) {
-              node(id: $projectId) {
-                ... on ProjectV2 {
-                  fields(first: 20) {
-                    nodes {
-                      ... on ProjectV2Field {
-                        id
-                        name
-                      }
-                    }
-                  }
-                }
-              }
-            }' -f projectId=$PROJECT_ID -q '.data.node.fields.nodes')
-
-          START_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "Start Date") | .id')
-          END_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "End Date") | .id')
-
-          echo "START_DATE_FIELD_ID: $START_DATE_FIELD_ID"
-          echo "END_DATE_FIELD_ID: $END_DATE_FIELD_ID"
+          echo "Converted Start Date: $START_DATE"
+          echo "Converted End Date: $END_DATE"
 
           # Update Start Date
           gh api graphql -f query='
@@ -113,7 +81,7 @@ jobs:
                   id
                 }
               }
-            }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f fieldId=$START_DATE_FIELD_ID -f date="${{ steps.extract_values.outputs.start_date }}"
+            }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f fieldId=$START_DATE_FIELD_ID -f date="$START_DATE"
 
           # Update End Date
           gh api graphql -f query='
@@ -128,10 +96,11 @@ jobs:
                   id
                 }
               }
-            }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f fieldId=$END_DATE_FIELD_ID -f date="${{ steps.extract_values.outputs.end_date }}"
+            }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f fieldId=$END_DATE_FIELD_ID -f date="$END_DATE"
+
+          echo "Project update completed"
         env:
           GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
-
       #Create a multiline variable so it can be read by parser
       # - name: multiline github var
       #   run: |
