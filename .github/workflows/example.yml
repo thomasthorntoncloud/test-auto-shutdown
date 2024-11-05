@@ -77,29 +77,58 @@ jobs:
           echo "PROJECT_ID: $PROJECT_ID"
           echo "ITEM_ID: $ITEM_ID"
 
+          # Get field IDs
+          FIELDS=$(gh api graphql -f query='
+            query($projectId: ID!) {
+              node(id: $projectId) {
+                ... on ProjectV2 {
+                  fields(first: 20) {
+                    nodes {
+                      ... on ProjectV2Field {
+                        id
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f projectId=$PROJECT_ID -q '.data.node.fields.nodes')
+
+          START_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "Start Date") | .id')
+          END_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "End Date") | .id')
+
+          echo "START_DATE_FIELD_ID: $START_DATE_FIELD_ID"
+          echo "END_DATE_FIELD_ID: $END_DATE_FIELD_ID"
+
+          # Update Start Date
           gh api graphql -f query='
-            mutation($projectId: ID!, $itemId: ID!, $startDate: String!, $endDate: String!) {
+            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $date: Date!) {
               updateProjectV2ItemFieldValue(input: {
-                projectId: $projectId,
-                itemId: $itemId,
-                fieldId: "Start Date",
-                value: $startDate
+                projectId: $projectId
+                itemId: $itemId
+                fieldId: $fieldId
+                value: { date: $date }
               }) {
                 projectV2Item {
                   id
                 }
               }
+            }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f fieldId=$START_DATE_FIELD_ID -f date="${{ steps.extract_values.outputs.start_date }}"
+
+          # Update End Date
+          gh api graphql -f query='
+            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $date: Date!) {
               updateProjectV2ItemFieldValue(input: {
-                projectId: $projectId,
-                itemId: $itemId,
-                fieldId: "End Date",
-                value: $endDate
+                projectId: $projectId
+                itemId: $itemId
+                fieldId: $fieldId
+                value: { date: $date }
               }) {
                 projectV2Item {
                   id
                 }
               }
-            }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f startDate="${{ steps.extract_values.outputs.start_date }}" -f endDate="${{ steps.extract_values.outputs.end_date }}"
+            }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f fieldId=$END_DATE_FIELD_ID -f date="${{ steps.extract_values.outputs.end_date }}"
         env:
           GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
 
