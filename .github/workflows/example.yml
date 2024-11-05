@@ -59,9 +59,49 @@ jobs:
 
       - name: Update GitHub Project
         run: |
-          gh project item update 2 --field "Start Date" --value "${{ steps.extract_values.outputs.start_date }}" --field "End Date" --value "${{ steps.extract_values.outputs.end_date }}" --field "Issue Number" --value "${{ github.event.issue.number }}"
-        # env:
-        #   GH_TOKEN: ${{ secrets.PLATFORM_USER_TOKEN }}
+          PROJECT_ID=$(gh api graphql -f query='
+            query {
+              repository(owner: "thomasthorntoncloud", name: "test-auto-shutdown") {
+                projectNext(number: 2) {
+                  id
+                }
+              }
+            }' -q '.data.repository.projectNext.id')
+
+          ITEM_ID=$(gh api graphql -f query='
+            query {
+              repository(owner: "thomasthorntoncloud", name: "test-auto-shutdown") {
+                issue(number: ${{ github.event.issue.number }}) {
+                  id
+                }
+              }
+            }' -q '.data.repository.issue.id')
+
+          gh api graphql -f query='
+            mutation($projectId: ID!, $itemId: ID!, $startDate: String!, $endDate: String!) {
+              updateProjectNextItemField(input: {
+                projectId: $projectId,
+                itemId: $itemId,
+                fieldId: "Start Date",
+                value: $startDate
+              }) {
+                projectNextItem {
+                  id
+                }
+              }
+              updateProjectNextItemField(input: {
+                projectId: $projectId,
+                itemId: $itemId,
+                fieldId: "End Date",
+                value: $endDate
+              }) {
+                projectNextItem {
+                  id
+                }
+              }
+            }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f startDate="${{ steps.extract_values.outputs.start_date }}" -f endDate="${{ steps.extract_values.outputs.end_date }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       #Create a multiline variable so it can be read by parser
       # - name: multiline github var
