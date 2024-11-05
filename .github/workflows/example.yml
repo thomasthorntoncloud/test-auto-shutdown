@@ -59,14 +59,11 @@ jobs:
 
       - name: Update GitHub Project
         run: |
+          # Get project ID
           PROJECT_ID=$(gh api graphql -f query='
-            query {
-              repository(owner: "thomasthorntoncloud", name: "test-auto-shutdown") {
-                projectNext(number: 2) {
-                  id
-                }
-              }
-            }' -q '.data.repository.projectNext.id')
+            query($org: String!, $num: Int!) {
+              organization(login: $org) { projectV2(number: $num) { id } }
+            }' -f org="thomasthorntoncloud" -F num=2 -q '.data.organization.projectV2.id')
 
           ITEM_ID=$(gh api graphql -f query='
             query {
@@ -77,25 +74,28 @@ jobs:
               }
             }' -q '.data.repository.issue.id')
 
+          echo "PROJECT_ID: $PROJECT_ID"
+          echo "ITEM_ID: $ITEM_ID"
+
           gh api graphql -f query='
             mutation($projectId: ID!, $itemId: ID!, $startDate: String!, $endDate: String!) {
-              updateProjectNextItemField(input: {
+              updateProjectV2ItemFieldValue(input: {
                 projectId: $projectId,
                 itemId: $itemId,
                 fieldId: "Start Date",
                 value: $startDate
               }) {
-                projectNextItem {
+                projectV2Item {
                   id
                 }
               }
-              updateProjectNextItemField(input: {
+              updateProjectV2ItemFieldValue(input: {
                 projectId: $projectId,
                 itemId: $itemId,
                 fieldId: "End Date",
                 value: $endDate
               }) {
-                projectNextItem {
+                projectV2Item {
                   id
                 }
               }
