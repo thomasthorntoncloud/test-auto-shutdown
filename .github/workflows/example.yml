@@ -205,7 +205,7 @@ jobs:
           # Check if the title already contains the new information
           if [[ "$CURRENT_TITLE" != *"$NEW_INFO"* ]]; then
             # Append to the title only if it doesn't already contain the new information
-            NEW_TITLE="${CURRENT_TITLE} | ${NEW_INFO}"
+            NEW_TITLE="${CURRENT_TITLE} - ${NEW_INFO}"
 
             # Update the issue with the new title
             gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
