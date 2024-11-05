@@ -194,6 +194,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
 
+      - name: Update issue title
+        run: |
+          # Get the current title
+          CURRENT_TITLE=$(gh issue view ${{ github.event.issue.number }} --json title -q .title)
+
+          # Append to the title
+          NEW_TITLE="${CURRENT_TITLE} - ${{ steps.extract_values.outputs.business_area }} - ${{ steps.extract_values.outputs.team_name }}" - ${{ steps.extract_values.outputs.environments_requested }}"
+
+          # Update the issue with the new title
+          gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
+
+  
+        env:
+          GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
+
       #Create a multiline variable so it can be read by parser
       # - name: multiline github var
       #   run: |
