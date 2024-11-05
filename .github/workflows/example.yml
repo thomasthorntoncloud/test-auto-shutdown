@@ -59,7 +59,40 @@ jobs:
 
       - name: Update GitHub Project
         run: |
-          # ... (previous code remains the same)
+          # Get project ID
+          PROJECT_ID=$(gh api graphql -f query='
+            query($org: String!, $num: Int!) {
+              organization(login: $org) { projectV2(number: $num) { id } }
+            }' -f org="thomasthorntoncloud" -F num=2 -q '.data.organization.projectV2.id')
+
+          ITEM_ID=$(gh api graphql -f query='
+            query {
+              repository(owner: "thomasthorntoncloud", name: "test-auto-shutdown") {
+                issue(number: ${{ github.event.issue.number }}) {
+                  id
+                }
+              }
+            }' -q '.data.repository.issue.id')
+
+          echo "PROJECT_ID: $PROJECT_ID"
+          echo "ITEM_ID: $ITEM_ID"
+
+          # Get field IDs
+          FIELDS=$(gh api graphql -f query='
+            query($projectId: ID!) {
+              node(id: $projectId) {
+                ... on ProjectV2 {
+                  fields(first: 20) {
+                    nodes {
+                      ... on ProjectV2Field {
+                        id
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f projectId=$PROJECT_ID -q '.data.node.fields.nodes')
 
           # Convert dates to ISO 8601 format
           START_DATE=$(date -d "${{ steps.extract_values.outputs.start_date }}" +%Y-%m-%d)
@@ -101,6 +134,7 @@ jobs:
           echo "Project update completed"
         env:
           GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
+
       #Create a multiline variable so it can be read by parser
       # - name: multiline github var
       #   run: |
