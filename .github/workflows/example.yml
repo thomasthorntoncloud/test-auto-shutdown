@@ -95,8 +95,16 @@ jobs:
             }' -f projectId=$PROJECT_ID -q '.data.node.fields.nodes')
 
           # Convert dates to ISO 8601 format
-          START_DATE=$(date -d "${{ steps.extract_values.outputs.start_date }}" +%Y-%m-%d)
-          END_DATE=$(date -d "${{ steps.extract_values.outputs.end_date }}" +%Y-%m-%d)
+          convert_date() {
+            local input_date="$1"
+            local day=$(echo $input_date | cut -d'-' -f1)
+            local month=$(echo $input_date | cut -d'-' -f2)
+            local year=$(echo $input_date | cut -d'-' -f3)
+            echo "$year-$month-$day"
+          }
+
+          START_DATE=$(convert_date "${{ steps.extract_values.outputs.start_date }}")
+          END_DATE=$(convert_date "${{ steps.extract_values.outputs.end_date }}")
 
           echo "Converted Start Date: $START_DATE"
           echo "Converted End Date: $END_DATE"
