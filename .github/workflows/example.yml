@@ -65,22 +65,16 @@ jobs:
               organization(login: $org) { projectV2(number: $num) { id } }
             }' -f org="thomasthorntoncloud" -F num=2 -q '.data.organization.projectV2.id')
 
-          echo "PROJECT_ID: $PROJECT_ID"
-
-          # Get item ID
           ITEM_ID=$(gh api graphql -f query='
-            query($owner: String!, $repo: String!, $number: Int!) {
-              repository(owner: $owner, name: $repo) {
-                issue(number: $number) {
-                  projectV2Items(first: 1) {
-                    nodes {
-                      id
-                    }
-                  }
+            query {
+              repository(owner: "thomasthorntoncloud", name: "test-auto-shutdown") {
+                issue(number: ${{ github.event.issue.number }}) {
+                  id
                 }
               }
-            }' -f owner="thomasthorntoncloud" -f repo="test-auto-shutdown" -f number=${{ github.event.issue.number }} -q '.data.repository.issue.projectV2Items.nodes[0].id')
+            }' -q '.data.repository.issue.id')
 
+          echo "PROJECT_ID: $PROJECT_ID"
           echo "ITEM_ID: $ITEM_ID"
 
           # Get field IDs
@@ -100,65 +94,55 @@ jobs:
               }
             }' -f projectId=$PROJECT_ID -q '.data.node.fields.nodes')
 
-          echo "All fields:"
-          echo "$FIELDS" | jq '.'
-
-          START_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "Start Date") | .id')
-          END_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "End Date") | .id')
-
-          echo "START_DATE_FIELD_ID: $START_DATE_FIELD_ID"
-          echo "END_DATE_FIELD_ID: $END_DATE_FIELD_ID"
-
           # Convert dates to ISO 8601 format
-          START_DATE=$(date -d "${{ steps.extract_values.outputs.start_date }}" +%Y-%m-%d)
-          END_DATE=$(date -d "${{ steps.extract_values.outputs.end_date }}" +%Y-%m-%d)
+          convert_date() {
+            local input_date="$1"
+            local day=$(echo $input_date | cut -d'-' -f1)
+            local month=$(echo $input_date | cut -d'-' -f2)
+            local year=$(echo $input_date | cut -d'-' -f3)
+            echo "$year-$month-$day"
+          }
 
-          echo "START_DATE: $START_DATE"
-          echo "END_DATE: $END_DATE"
+          START_DATE=$(convert_date "${{ steps.extract_values.outputs.start_date }}")
+          END_DATE=$(convert_date "${{ steps.extract_values.outputs.end_date }}")
+
+          echo "Converted Start Date: $START_DATE"
+          echo "Converted End Date: $END_DATE"
 
           # Update Start Date
-          if [ -n "$START_DATE_FIELD_ID" ]; then
-            echo "Updating Start Date..."
-            gh api graphql -f query='
-              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $date: Date!) {
-                updateProjectV2ItemFieldValue(input: {
-                  projectId: $projectId
-                  itemId: $itemId
-                  fieldId: $fieldId
-                  value: { date: $date }
-                }) {
-                  projectV2Item {
-                    id
-                  }
+          gh api graphql -f query='
+            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $date: Date!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $projectId
+                itemId: $itemId
+                fieldId: $fieldId
+                value: { date: $date }
+              }) {
+                projectV2Item {
+                  id
                 }
-              }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f fieldId=$START_DATE_FIELD_ID -f date=$START_DATE
-          else
-            echo "Start Date field not found"
-          fi
+              }
+            }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f fieldId=$START_DATE_FIELD_ID -f date="$START_DATE"
 
           # Update End Date
-          if [ -n "$END_DATE_FIELD_ID" ]; then
-            echo "Updating End Date..."
-            gh api graphql -f query='
-              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $date: Date!) {
-                updateProjectV2ItemFieldValue(input: {
-                  projectId: $projectId
-                  itemId: $itemId
-                  fieldId: $fieldId
-                  value: { date: $date }
-                }) {
-                  projectV2Item {
-                    id
-                  }
+          gh api graphql -f query='
+            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $date: Date!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $projectId
+                itemId: $itemId
+                fieldId: $fieldId
+                value: { date: $date }
+              }) {
+                projectV2Item {
+                  id
                 }
-              }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f fieldId=$END_DATE_FIELD_ID -f date=$END_DATE
-          else
-            echo "End Date field not found"
-          fi
+              }
+            }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f fieldId=$END_DATE_FIELD_ID -f date="$END_DATE"
 
           echo "Project update completed"
         env:
           GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
+
       #Create a multiline variable so it can be read by parser
       # - name: multiline github var
       #   run: |
