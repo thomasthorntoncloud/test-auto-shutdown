@@ -48,14 +48,20 @@ jobs:
           echo "end_date=$END_DATE" >> $GITHUB_OUTPUT
           echo "past_11pm=$PAST_11PM" >> $GITHUB_OUTPUT
 
-          # Update project fields
-          gh project item-add 2 --owner thomasthorntoncloud --url ${{ github.event.issue.html_url }} --field "Start Date=$START_DATE" --field "End Date=$END_DATE"
+      
+
 
       - name: Use extracted values
         run: |
           echo "Start Date: ${{ steps.extract_values.outputs.start_date }}"
           echo "End Date: ${{ steps.extract_values.outputs.end_date }}"
           echo "Past 11pm: ${{ steps.extract_values.outputs.past_11pm }}"
+
+      - name: Update GitHub Project
+        run: |
+          gh project item update 2 --field "Start Date" --value "${{ steps.extract_values.outputs.start_date }}" --field "End Date" --value "${{ steps.extract_values.outputs.end_date }}" --field "Issue Number" --value "${{ github.event.issue.number }}"
+        # env:
+        #   GH_TOKEN: ${{ secrets.PLATFORM_USER_TOKEN }}
 
       #Create a multiline variable so it can be read by parser
       # - name: multiline github var
