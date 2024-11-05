@@ -6,6 +6,7 @@ on:
       - opened
       - edited
       - labeled
+      - reopened
   workflow_dispatch:
 env:
   GH_TOKEN: ${{ secrets.PLATFORM_USER_TOKEN }}
