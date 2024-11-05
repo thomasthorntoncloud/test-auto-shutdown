@@ -101,14 +101,17 @@ jobs:
                       ... on ProjectV2Field {
                         id
                         name
+                        dataType
                       }
                       ... on ProjectV2IterationField {
                         id
                         name
+                        dataType
                       }
                       ... on ProjectV2SingleSelectField {
                         id
                         name
+                        dataType
                       }
                     }
                   }
@@ -116,12 +119,21 @@ jobs:
               }
             }' -f projectId=$PROJECT_ID -q '.data.node.fields.nodes')
 
+          echo "All fields:"
+          echo "$FIELDS" | jq '.'
+
           # Extract Start Date and End Date field IDs
-          START_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "Start Date") | .id')
-          END_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "End Date") | .id')
+          START_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "Start Date" and .dataType == "DATE") | .id')
+          END_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "End Date" and .dataType == "DATE") | .id')
 
           echo "Start Date Field ID: $START_DATE_FIELD_ID"
           echo "End Date Field ID: $END_DATE_FIELD_ID"
+
+          # Check if field IDs are empty
+          if [ -z "$START_DATE_FIELD_ID" ] || [ -z "$END_DATE_FIELD_ID" ]; then
+            echo "Error: Could not find Start Date or End Date fields. Please check the field names in your project."
+            exit 1
+          fi
 
           # Convert dates to ISO 8601 format
           convert_date() {
