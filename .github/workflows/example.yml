@@ -4,7 +4,7 @@ on:
   issues:
     types:
       - opened
-      # - edited
+      - edited
       - labeled
       - reopened
   workflow_dispatch:
@@ -199,11 +199,21 @@ jobs:
           # Get the current title
           CURRENT_TITLE=$(gh issue view ${{ github.event.issue.number }} --json title -q .title)
 
-          # Append to the title
-          NEW_TITLE="${CURRENT_TITLE} - ${{ steps.extract_values.outputs.business_area }} - ${{ steps.extract_values.outputs.team_name }} - ${{ steps.extract_values.outputs.environments_requested }}"
+          # Prepare the new information to append
+          NEW_INFO="BA: ${{ steps.extract_values.outputs.business_area }} | Team: ${{ steps.extract_values.outputs.team_name }} | Env: ${{ steps.extract_values.outputs.environments_requested }}"
 
-          # Update the issue with the new title
-          gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
+          # Check if the title already contains the new information
+          if [[ "$CURRENT_TITLE" != *"$NEW_INFO"* ]]; then
+            # Append to the title only if it doesn't already contain the new information
+            NEW_TITLE="${CURRENT_TITLE} | ${NEW_INFO}"
+
+            # Update the issue with the new title
+            gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
+
+            echo "Updated issue title to: $NEW_TITLE"
+          else
+            echo "Title already contains the required information. No update needed."
+          fi
 
   
         env:
