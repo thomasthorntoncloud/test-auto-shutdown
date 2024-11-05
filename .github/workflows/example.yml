@@ -48,10 +48,8 @@ jobs:
           echo "end_date=$END_DATE" >> $GITHUB_OUTPUT
           echo "past_11pm=$PAST_11PM" >> $GITHUB_OUTPUT
 
-          # Debug output
-          echo "Debug - START_DATE: $START_DATE"
-          echo "Debug - END_DATE: $END_DATE"
-          echo "Debug - PAST_11PM: $PAST_11PM"
+          # Update project fields
+          gh project item-add 2 --owner thomasthorntoncloud --url ${{ github.event.issue.html_url }} --field "Start Date=$START_DATE" --field "End Date=$END_DATE"
 
       - name: Use extracted values
         run: |
