@@ -9,7 +9,7 @@ on:
       - reopened
   workflow_dispatch:
 env:
-  GH_TOKEN: ${{ secrets.PLATFORM_USER_TOKEN }}
+  GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
   GH_REPO: ${{ github.repository }}
   NUMBER: ${{ github.event.issue.number }}
 permissions:
@@ -101,7 +101,7 @@ jobs:
               }
             }' -f projectId=$PROJECT_ID -f itemId=$ITEM_ID -f startDate="${{ steps.extract_values.outputs.start_date }}" -f endDate="${{ steps.extract_values.outputs.end_date }}"
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
 
       #Create a multiline variable so it can be read by parser
       # - name: multiline github var
