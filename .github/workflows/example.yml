@@ -200,7 +200,7 @@ jobs:
           CURRENT_TITLE=$(gh issue view ${{ github.event.issue.number }} --json title -q .title)
 
           # Append to the title
-          NEW_TITLE="${CURRENT_TITLE} - ${{ steps.extract_values.outputs.business_area }} - ${{ steps.extract_values.outputs.team_name }}" - ${{ steps.extract_values.outputs.environments_requested }}"
+          NEW_TITLE="${CURRENT_TITLE} - ${{ steps.extract_values.outputs.business_area }} - ${{ steps.extract_values.outputs.team_name }} - ${{ steps.extract_values.outputs.environments_requested }}"
 
           # Update the issue with the new title
           gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
