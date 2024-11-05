@@ -48,6 +48,8 @@ jobs:
           echo "end_date=$END_DATE" >> $GITHUB_OUTPUT
           echo "past_11pm=$PAST_11PM" >> $GITHUB_OUTPUT
 
+      - name: Use extracted values
+        run: |
           echo "Start Date: ${{ steps.extract_values.outputs.start_date }}"
           echo "End Date: ${{ steps.extract_values.outputs.end_date }}"
           echo "Past 11pm: ${{ steps.extract_values.outputs.past_11pm }}"
