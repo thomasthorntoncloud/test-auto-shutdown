@@ -50,7 +50,7 @@ jobs:
       if: "!contains(github.event.issue.labels.*.name, 'cancel')"
       run: |
         # Get project ID
-        PROJECT_ID=$(gh project view 2 --owner thomasthorntoncloud --format json | jq -r '.id')
+        PROJECT_ID=$(gh project view 2 --owner @me --format json | jq -r '.id')
         echo "PROJECT_ID: $PROJECT_ID"
 
         # Get issue ID
@@ -58,11 +58,11 @@ jobs:
         echo "ISSUE_ID: $ISSUE_ID"
 
         # Get project ID
-        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner thomasthorntoncloud --format json | jq -r '.id')
+        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner @me --format json | jq -r '.id')
         echo "Project ID: $PROJECT_ID"
 
         # Add the issue to the project and get the item ID
-        ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner thomasthorntoncloud --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
+        ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner @me --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
         echo "ITEM_ID: $ITEM_ID"
 
         # Convert dates to ISO 8601 format
