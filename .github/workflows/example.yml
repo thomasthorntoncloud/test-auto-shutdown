@@ -138,16 +138,20 @@ jobs:
         # Fetch all items from the project
         ALL_ITEMS=$(gh project item-list $PROJECT_NUMBER --owner $OWNER --format json)
 
-        echo $ALL_ITEMS
+        # Check if ALL_ITEMS is not empty
+        if [ -z "$ALL_ITEMS" ]; then
+          echo "No items found in the project."
+          exit 0
+        fi
 
         # Sort items by creation date and get the total count
-        SORTED_ITEMS=$(echo "$ALL_ITEMS" | jq 'sort_by(.createdAt) | reverse')
+        SORTED_ITEMS=$(echo "$ALL_ITEMS" | jq 'sort_by(.content.createdAt) | reverse')
         TOTAL_ITEMS=$(echo "$SORTED_ITEMS" | jq length)
 
         echo "Total items in project: $TOTAL_ITEMS"
 
         # If there are more than 5 items, remove the oldest ones
-        if [ $TOTAL_ITEMS -gt 5 ]; then
+        if [ "$TOTAL_ITEMS" -gt 5 ]; then
           ITEMS_TO_REMOVE=$((TOTAL_ITEMS - 5))
           echo "Removing $ITEMS_TO_REMOVE items"
 
