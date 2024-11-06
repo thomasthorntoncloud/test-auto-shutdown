@@ -150,32 +150,34 @@ jobs:
         echo "Converted End Date: $END_DATE"
 
         # Get field IDs
-        FIELDS=$(gh api graphql -f query='
-          query($projectId: ID!) {
-            node(id: $projectId) {
-              ... on ProjectV2 {
-                fields(first: 20) {
-                  nodes {
-                    ... on ProjectV2Field {
-                      id
-                      name
-                      dataType
-                    }
-                    ... on ProjectV2IterationField {
-                      id
-                      name
-                      dataType
-                    }
-                    ... on ProjectV2SingleSelectField {
-                      id
-                      name
-                      dataType
-                    }
-                  }
-                }
-              }
-            }
-          }' -f projectId=$PROJECT_ID -q '.data.node.fields.nodes')
+        # FIELDS=$(gh api graphql -f query='
+        #   query($projectId: ID!) {
+        #     node(id: $projectId) {
+        #       ... on ProjectV2 {
+        #         fields(first: 20) {
+        #           nodes {
+        #             ... on ProjectV2Field {
+        #               id
+        #               name
+        #               dataType
+        #             }
+        #             ... on ProjectV2IterationField {
+        #               id
+        #               name
+        #               dataType
+        #             }
+        #             ... on ProjectV2SingleSelectField {
+        #               id
+        #               name
+        #               dataType
+        #             }
+        #           }
+        #         }
+        #       }
+        #     }
+        #   }' -f projectId=$PROJECT_ID -q '.data.node.fields.nodes')
+
+        FIELDS=$(gh project field-list $PROJECT_NUMBER --owner thomasthorntoncloud --format json)
 
         echo "All fields:"
         echo "$FIELDS" | jq '.'
