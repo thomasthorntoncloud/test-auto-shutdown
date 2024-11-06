@@ -208,15 +208,8 @@ jobs:
               PAST_11PM=""
           fi
 
-          # Check for cancelled label and echo "hello"
-          if [[ " ${GITHUB_EVENT_LABELS[*]} " == *" cancel "* ]]; then
-              CANCEL="🚫"
-            else
-              CANCEL=""
-          fi
-
           # Prepare the new information to append
-          NEW_INFO="${{ steps.extract_values.outputs.business_area }} - ${{ steps.extract_values.outputs.team_name }} - ${{ steps.extract_values.outputs.environments_requested }} $PAST_11PM $CANCEL"
+          NEW_INFO="${{ steps.extract_values.outputs.business_area }} - ${{ steps.extract_values.outputs.team_name }} - ${{ steps.extract_values.outputs.environments_requested }} $PAST_11PM"
 
           # Check if the title already contains the new information
           if [[ "$CURRENT_TITLE" != *"$NEW_INFO"* ]]; then
@@ -230,5 +223,17 @@ jobs:
           else
             echo "Title already contains the required information. No update needed."
           fi
+        env:
+          GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
+
+      - name: Run if cancel label added
+        if: contains(github.event.issue.labels.*.name, 'cancel')
+        run: |
+          # Get the current title
+          CURRENT_TITLE=$(gh issue view ${{ github.event.issue.number }} --json title -q .title)
+          NEW_TITLE="${CURRENT_TITLE} - ❌"
+
+          # Update the issue with the new title
+          gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
         env:
           GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
