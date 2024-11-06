@@ -132,9 +132,9 @@ jobs:
     - name: Keep only last 5 issues on project board
       run: |
         PROJECT_NUMBER=2
-        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner thomasthorntoncloud --format json | jq -r '.id')
+        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner thomasthorntoncloud --json id | jq -r '.id')
 
-        ITEMS=$(gh project item-list $PROJECT_ID --format json | jq -r '.items | sort_by(.createdAt) | reverse | .[5:] | .[].id')
+        ITEMS=$(gh project item-list $PROJECT_ID --json items | jq -r '.items | sort_by(.createdAt) | reverse | .[5:] | .[].id')
 
         for ITEM_ID in $ITEMS; do
           gh project item-remove $PROJECT_ID --id $ITEM_ID
