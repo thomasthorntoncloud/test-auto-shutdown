@@ -231,12 +231,12 @@ jobs:
         run: |
           # Get the current title
           CURRENT_TITLE=$(gh issue view ${{ github.event.issue.number }} --json title -q .title)
-          NEW_TITLE="${CURRENT_TITLE} - ❌"
-
-          if [[ "$CURRENT_TITLE" != *"$NEW_TITLE"* ]]; then
-
-          # Update the issue with the new title
-          gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
+          NEW_INFO="❌"
+          
+          if [[ "$CURRENT_TITLE" != *"$NEW_INFO"* ]]; then
+            NEW_TITLE="${CURRENT_TITLE} - ❌"
+            # Update the issue with the new title
+            gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
 
           else
             echo "Title already contains the required information. No update needed."
