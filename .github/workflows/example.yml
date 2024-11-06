@@ -205,11 +205,11 @@ jobs:
           if [[ "${{ steps.extract_values.outputs.past_11pm }}" == "Yes" ]]; then
               PAST_11PM="🕒"
             else
-              PAST_11PM="🌙"
+              PAST_11PM=""
           fi
 
           # Prepare the new information to append
-          NEW_INFO="${{ steps.extract_values.outputs.business_area }} - ${{ steps.extract_values.outputs.team_name }} - ${{ steps.extract_values.outputs.environments_requested }} - $PAST_11PM"
+          NEW_INFO="${{ steps.extract_values.outputs.business_area }} - ${{ steps.extract_values.outputs.team_name }} - ${{ steps.extract_values.outputs.environments_requested }} $PAST_11PM"
 
           # Check if the title already contains the new information
           if [[ "$CURRENT_TITLE" != *"$NEW_INFO"* ]]; then
