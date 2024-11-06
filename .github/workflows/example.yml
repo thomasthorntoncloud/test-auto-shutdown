@@ -72,21 +72,42 @@ jobs:
         echo "Converted End Date: $END_DATE"
 
         # Get field IDs
-        FIELDS=$(gh project field-list $PROJECT_NUMBER --owner @me --format json)
-        echo "Fields JSON:"
+        FIELDS=$(gh api graphql -f query='
+          query($projectId: ID!) {
+            node(id: $projectId) {
+              ... on ProjectV2 {
+                fields(first: 20) {
+                  nodes {
+                    ... on ProjectV2Field {
+                      id
+                      name
+                      dataType
+                    }
+                    ... on ProjectV2IterationField {
+                      id
+                      name
+                      dataType
+                    }
+                    ... on ProjectV2SingleSelectField {
+                      id
+                      name
+                      dataType
+                    }
+                  }
+                }
+              }
+            }
+          }' -f projectId=$PROJECT_ID -q '.data.node.fields.nodes')
+
+        echo "All fields:"
         echo "$FIELDS" | jq '.'
 
+        # Extract StartDate and EndDate field IDs
         START_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "StartDate") | .id')
         END_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "EndDate") | .id')
 
         echo "StartDate Field ID: $START_DATE_FIELD_ID"
         echo "EndDate Field ID: $END_DATE_FIELD_ID"
-
-        # Check if field IDs are empty
-        if [ -z "$START_DATE_FIELD_ID" ] || [ -z "$END_DATE_FIELD_ID" ]; then
-          echo "Error: Could not find StartDate or EndDate fields. Please check the field names in your project."
-          exit 1
-        fi
 
         # Update StartDate field
         gh project item-edit $PROJECT_NUMBER --owner @me --id "$ITEM_ID" --field-id "$START_DATE_FIELD_ID" --date "$START_DATE"
