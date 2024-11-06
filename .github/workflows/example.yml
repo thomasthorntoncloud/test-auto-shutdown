@@ -138,6 +138,8 @@ jobs:
         # Fetch all items from the project
         ALL_ITEMS=$(gh project item-list $PROJECT_NUMBER --owner $OWNER --format json)
 
+        echo $ALL_ITEMS
+
         # Sort items by creation date and get the total count
         SORTED_ITEMS=$(echo "$ALL_ITEMS" | jq 'sort_by(.createdAt) | reverse')
         TOTAL_ITEMS=$(echo "$SORTED_ITEMS" | jq length)
