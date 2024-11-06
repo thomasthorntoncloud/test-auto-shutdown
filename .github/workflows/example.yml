@@ -202,7 +202,7 @@ jobs:
           CURRENT_TITLE=$(gh issue view ${{ github.event.issue.number }} --json title -q .title)
 
           # Check if past 11pm is requested
-          if [[ "${{ steps.extract_values.outputs.past_11pm }}" == "Yes" ]]; then
+          if [[ "${{ steps.extract_values.outputs.past_11pm }}" == "No" ]]; then
               PAST_11PM="🕒"
             else
               PAST_11PM=""
