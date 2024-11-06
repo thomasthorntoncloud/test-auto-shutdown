@@ -200,6 +200,15 @@ jobs:
               PAST_11PM=""
           fi
 
+          if [[ "$CURRENT_TITLE" != *"❌"* ]]; then
+            NEW_TITLE=$(echo "$CURRENT_TITLE" | sed 's/❌//g')
+
+            # Update the issue with the new title
+            gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
+
+            echo "❌ has been removed from the title"
+          fi
+
           # Prepare the new information to append
           NEW_INFO="${{ steps.get_issue_body.outputs.business_area }} - ${{ steps.get_issue_body.outputs.team_name }} - ${{ steps.get_issue_body.outputs.environments_requested }} $PAST_11PM"
 
@@ -213,11 +222,6 @@ jobs:
 
             echo "Updated issue title to: $NEW_TITLE"
 
-          elif [[ "$CURRENT_TITLE" != *"❌"* ]]; then
-            NEW_TITLE=$(echo "$CURRENT_TITLE" | sed 's/❌//g')
-
-            # Update the issue with the new title
-            gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
           else
             echo "Title already contains the required information. No update needed."
           fi
