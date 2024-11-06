@@ -115,10 +115,10 @@ jobs:
         echo "EndDate Field ID: $END_DATE_FIELD_ID"
 
         # Update StartDate field
-        gh project item-edit $PROJECT_NUMBER --owner @me --id "$ITEM_ID" --field-id "$START_DATE_FIELD_ID" --date "$START_DATE"
+        gh project item-edit $PROJECT_NUMBER --id "$ITEM_ID" --field-id "$START_DATE_FIELD_ID" --date "$START_DATE"
 
         # Update EndDate field
-        gh project item-edit $PROJECT_NUMBER --owner @me --id "$ITEM_ID" --field-id "$END_DATE_FIELD_ID" --date "$END_DATE"
+        gh project item-edit $PROJECT_NUMBER --id "$ITEM_ID" --field-id "$END_DATE_FIELD_ID" --date "$END_DATE"
 
         echo "Project update completed"
       env:
