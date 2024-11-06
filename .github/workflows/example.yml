@@ -46,26 +46,93 @@ jobs:
         echo "environments_requested=$ENVIRONMENTS_REQUESTED" >> $GITHUB_OUTPUT
         echo "past_11pm=$PAST_11PM" >> $GITHUB_OUTPUT
 
+    # - name: Update GitHub Project
+    #   if: "!contains(github.event.issue.labels.*.name, 'cancel')"
+    #   run: |
+    #     PROJECT_NUMBER=2
+        
+    #     # Get project ID
+    #     PROJECT_ID=$(gh project view 2 --owner @me --format json | jq -r '.id')
+    #     echo "PROJECT_ID: $PROJECT_ID"
+
+    #     # Get issue ID
+    #     ISSUE_ID=$(gh issue view ${{ github.event.issue.number }} --repo thomasthorntoncloud/test-auto-shutdown --json id -q '.id')
+    #     echo "ISSUE_ID: $ISSUE_ID"
+
+    #     # Get project ID
+    #     PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner @me --format json | jq -r '.id')
+    #     echo "Project ID: $PROJECT_ID"
+
+    #     # Add the issue to the project and get the item ID
+    #     ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner @me --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
+    #     echo "ITEM_ID: $ITEM_ID"
+
+    #     # Convert dates to ISO 8601 format
+    #     convert_date() {
+    #       local input_date="$1"
+    #       local day=$(echo $input_date | cut -d'-' -f1)
+    #       local month=$(echo $input_date | cut -d'-' -f2)
+    #       local year=$(echo $input_date | cut -d'-' -f3)
+    #       echo "$year-$month-$day"
+    #     }
+
+    #     START_DATE=$(convert_date "${{ steps.get_issue_body.outputs.start_date }}")
+    #     END_DATE=$(convert_date "${{ steps.get_issue_body.outputs.end_date }}")
+
+    #     echo "Converted Start Date: $START_DATE"
+    #     echo "Converted End Date: $END_DATE"
+
+    #     # Get field IDs
+    #     FIELDS=$(gh api graphql -f query='
+    #       query($projectId: ID!) {
+    #         node(id: $projectId) {
+    #           ... on ProjectV2 {
+    #             fields(first: 20) {
+    #               nodes {
+    #                 ... on ProjectV2Field {
+    #                   id
+    #                   name
+    #                   dataType
+    #                 }
+    #                 ... on ProjectV2IterationField {
+    #                   id
+    #                   name
+    #                   dataType
+    #                 }
+    #                 ... on ProjectV2SingleSelectField {
+    #                   id
+    #                   name
+    #                   dataType
+    #                 }
+    #               }
+    #             }
+    #           }
+    #         }
+    #       }' -f projectId=$PROJECT_ID -q '.data.node.fields.nodes')
+
+    #     echo "All fields:"
+    #     echo "$FIELDS" | jq '.'
+
+    #     # Extract StartDate and EndDate field IDs
+    #     START_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "StartDate") | .id')
+    #     END_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "EndDate") | .id')
+
+    #     echo "StartDate Field ID: $START_DATE_FIELD_ID"
+    #     echo "EndDate Field ID: $END_DATE_FIELD_ID"
     - name: Update GitHub Project
       if: "!contains(github.event.issue.labels.*.name, 'cancel')"
       run: |
+        # Get project number (assuming it's 2 based on your previous commands)
         PROJECT_NUMBER=2
-        
-        # Get project ID
-        PROJECT_ID=$(gh project view 2 --owner @me --format json | jq -r '.id')
-        echo "PROJECT_ID: $PROJECT_ID"
 
-        # Get issue ID
-        ISSUE_ID=$(gh issue view ${{ github.event.issue.number }} --repo thomasthorntoncloud/test-auto-shutdown --json id -q '.id')
-        echo "ISSUE_ID: $ISSUE_ID"
+        # Add issue to project
+        ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner @me --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
+        echo "Item ID: $ITEM_ID"
 
         # Get project ID
-        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner @me --format json | jq -r '.id')
+        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner thomasthorntoncloud --format json | jq -r '.id')
         echo "Project ID: $PROJECT_ID"
 
-        # Add the issue to the project and get the item ID
-        ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner @me --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
-        echo "ITEM_ID: $ITEM_ID"
 
         # Convert dates to ISO 8601 format
         convert_date() {
@@ -120,81 +187,13 @@ jobs:
         echo "StartDate Field ID: $START_DATE_FIELD_ID"
         echo "EndDate Field ID: $END_DATE_FIELD_ID"
 
-    # - name: Update GitHub Project
-    #   if: "!contains(github.event.issue.labels.*.name, 'cancel')"
-    #   run: |
-    #     # Get project number (assuming it's 2 based on your previous commands)
-    #     PROJECT_NUMBER=2
+        # Update StartDate field
+        gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" --field-id "$START_DATE_FIELD_ID" --date "$START_DATE"
 
-    #     # Add issue to project
-    #     ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner @me --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
-    #     echo "Item ID: $ITEM_ID"
+        # Update EndDate field
+        gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" --field-id "$END_DATE_FIELD_ID" --date "$END_DATE"
 
-    #     # Get project ID
-    #     PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner thomasthorntoncloud --format json | jq -r '.id')
-    #     echo "Project ID: $PROJECT_ID"
-
-
-    #     # Convert dates to ISO 8601 format
-    #     convert_date() {
-    #       local input_date="$1"
-    #       local day=$(echo $input_date | cut -d'-' -f1)
-    #       local month=$(echo $input_date | cut -d'-' -f2)
-    #       local year=$(echo $input_date | cut -d'-' -f3)
-    #       echo "$year-$month-$day"
-    #     }
-
-    #     START_DATE=$(convert_date "${{ steps.get_issue_body.outputs.start_date }}")
-    #     END_DATE=$(convert_date "${{ steps.get_issue_body.outputs.end_date }}")
-
-    #     echo "Converted Start Date: $START_DATE"
-    #     echo "Converted End Date: $END_DATE"
-
-    #     # Get field IDs
-    #     FIELDS=$(gh api graphql -f query='
-    #       query($projectId: ID!) {
-    #         node(id: $projectId) {
-    #           ... on ProjectV2 {
-    #             fields(first: 20) {
-    #               nodes {
-    #                 ... on ProjectV2Field {
-    #                   id
-    #                   name
-    #                   dataType
-    #                 }
-    #                 ... on ProjectV2IterationField {
-    #                   id
-    #                   name
-    #                   dataType
-    #                 }
-    #                 ... on ProjectV2SingleSelectField {
-    #                   id
-    #                   name
-    #                   dataType
-    #                 }
-    #               }
-    #             }
-    #           }
-    #         }
-    #       }' -f projectId=$PROJECT_ID -q '.data.node.fields.nodes')
-
-    #     echo "All fields:"
-    #     echo "$FIELDS" | jq '.'
-
-    #     # Extract StartDate and EndDate field IDs
-    #     START_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "StartDate") | .id')
-    #     END_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "EndDate") | .id')
-
-    #     echo "StartDate Field ID: $START_DATE_FIELD_ID"
-    #     echo "EndDate Field ID: $END_DATE_FIELD_ID"
-
-    #     # Update StartDate field
-    #     gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" --field-id "$START_DATE_FIELD_ID" --date "$START_DATE"
-
-    #     # Update EndDate field
-    #     gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" --field-id "$END_DATE_FIELD_ID" --date "$END_DATE"
-
-    #     echo "Project update completed"
+        echo "Project update completed"
       env:
         GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
 
