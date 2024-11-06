@@ -56,6 +56,11 @@ jobs:
         ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner @me --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
         echo "Item ID: $ITEM_ID"
 
+        # Get project ID
+        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner thomasthorntoncloud --format json | jq -r '.id')
+        echo "Project ID: $PROJECT_ID"
+
+
         # Convert dates to ISO 8601 format
         convert_date() {
           local input_date="$1"
