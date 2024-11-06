@@ -212,6 +212,12 @@ jobs:
             gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
 
             echo "Updated issue title to: $NEW_TITLE"
+
+          elif [[ "$CURRENT_TITLE" != *"❌"* ]]; then
+            NEW_TITLE=$(echo "$CURRENT_TITLE" | sed 's/❌//g')
+
+            # Update the issue with the new title
+            gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
           else
             echo "Title already contains the required information. No update needed."
           fi
