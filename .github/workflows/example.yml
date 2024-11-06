@@ -95,8 +95,6 @@ jobs:
         gh project item-edit $PROJECT_NUMBER --owner @me --id "$ITEM_ID" --field-id "$END_DATE_FIELD_ID" --date "$END_DATE"
 
         echo "Project update completed"
-  env:
-    GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
       env:
         GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
 
