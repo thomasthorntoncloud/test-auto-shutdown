@@ -49,6 +49,8 @@ jobs:
     - name: Update GitHub Project
       if: "!contains(github.event.issue.labels.*.name, 'cancel')"
       run: |
+        PROJECT_NUMBER=2
+        
         # Get project ID
         PROJECT_ID=$(gh project view 2 --owner @me --format json | jq -r '.id')
         echo "PROJECT_ID: $PROJECT_ID"
