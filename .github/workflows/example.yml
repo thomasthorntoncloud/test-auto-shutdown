@@ -60,7 +60,7 @@ jobs:
       #     echo "Past 11pm: ${{ steps.extract_values.outputs.past_11pm }}"
 
       - name: Update GitHub Project
-        if: "!contains(github.event.issue.labels.*.name, 'cancel')"
+        # if: "!contains(github.event.issue.labels.*.name, 'cancel')"
         run: |
           # Get project ID
           PROJECT_ID=$(gh api graphql -f query='
@@ -188,7 +188,7 @@ jobs:
           GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
 
       - name: Update issue title
-        if: "!contains(github.event.issue.labels.*.name, 'cancel')"
+        # if: "!contains(github.event.issue.labels.*.name, 'cancel')"
         run: |
           # Get the current title
           CURRENT_TITLE=$(gh issue view ${{ github.event.issue.number }} --json title -q .title)
