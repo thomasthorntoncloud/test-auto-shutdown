@@ -102,7 +102,12 @@ jobs:
       run: |
         CURRENT_TITLE=$(gh issue view ${{ github.event.issue.number }} --json title -q .title)
         
-        PAST_11PM=$([ "${{ steps.get_issue_body.outputs.past_11pm }}" == "No" ] && echo "🕒" || echo "")
+          # Check if past 11pm is requested
+          if [[ "${{ steps.get_issue_body.outputs.past_11pm }}" == "No" ]]; then
+              PAST_11PM="🕒"
+            else
+              PAST_11PM=""
+          fi
         
         if [[ "$CURRENT_TITLE" == *"- ❌"* ]]; then
           CURRENT_TITLE=$(echo "$CURRENT_TITLE" | sed 's/- ❌//g')
