@@ -183,8 +183,8 @@ jobs:
         echo "$FIELDS" | jq '.'
 
         # Extract StartDate and EndDate field IDs
-        START_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "StartDate") | .id')
-        END_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "EndDate") | .id')
+        START_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.fields[] | select(.name == "StartDate") | .id')
+        END_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.fields[] | select(.name == "EndDate") | .id')
 
         echo "StartDate Field ID: $START_DATE_FIELD_ID"
         echo "EndDate Field ID: $END_DATE_FIELD_ID"
