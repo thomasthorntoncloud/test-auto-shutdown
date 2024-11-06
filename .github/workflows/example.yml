@@ -129,7 +129,7 @@ jobs:
           NEW_TITLE="${CURRENT_TITLE} - ❌"
           gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
         fi
-    - name: Keep only last 5 issues on project board
+    - name: Keep last 10 issues on project board
       run: |
         PROJECT_NUMBER=2
         OWNER=thomasthorntoncloud
@@ -142,7 +142,7 @@ jobs:
         ALL_ITEMS=$(gh project item-list $PROJECT_NUMBER --owner $OWNER --format json)
 
         # Sort items by creation date (newest first) and get IDs of items to remove
-        ITEMS_TO_REMOVE=$(echo "$ALL_ITEMS" | jq -r '.items | sort_by(.createdAt) | reverse | .[5:] | .[].id')
+        ITEMS_TO_REMOVE=$(echo "$ALL_ITEMS" | jq -r '.items | sort_by(.createdAt) | reverse | .[10:] | .[].id')
 
         # Count items to remove
         REMOVE_COUNT=$(echo "$ITEMS_TO_REMOVE" | wc -w)
@@ -154,6 +154,7 @@ jobs:
           gh project item-delete $PROJECT_NUMBER --owner $OWNER --id $ITEM_ID
         done
 
-        echo "Cleanup completed. Kept the 5 most recent items."
+        echo "Cleanup completed. Kept the 10 most recent items."
+
       env:
         GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
