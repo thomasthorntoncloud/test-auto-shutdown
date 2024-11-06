@@ -132,12 +132,28 @@ jobs:
     - name: Keep only last 5 issues on project board
       run: |
         PROJECT_NUMBER=2
-        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner thomasthorntoncloud --json id | jq -r '.id')
+        OWNER=thomasthorntoncloud
 
-        ITEMS=$(gh project item-list $PROJECT_ID --json items | jq -r '.items | sort_by(.createdAt) | reverse | .[5:] | .[].id')
+        # Get project ID
+        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner $OWNER --format json | jq -r '.id')
+        echo "Project ID: $PROJECT_ID"
 
-        for ITEM_ID in $ITEMS; do
-          gh project item-remove $PROJECT_ID --id $ITEM_ID
+        # Fetch all items from the project
+        ALL_ITEMS=$(gh project item-list $PROJECT_NUMBER --owner $OWNER --format json)
+
+        # Sort items by creation date (newest first) and get IDs of items to remove
+        ITEMS_TO_REMOVE=$(echo "$ALL_ITEMS" | jq -r '.items | sort_by(.createdAt) | reverse | .[5:] | .[].id')
+
+        # Count items to remove
+        REMOVE_COUNT=$(echo "$ITEMS_TO_REMOVE" | wc -w)
+        echo "Items to remove: $REMOVE_COUNT"
+
+        # Remove each item
+        for ITEM_ID in $ITEMS_TO_REMOVE; do
+          echo "Removing item $ITEM_ID"
+          gh project item-delete $PROJECT_NUMBER --owner $OWNER --id $ITEM_ID
         done
+
+        echo "Cleanup completed. Kept the 5 most recent items."
       env:
         GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
