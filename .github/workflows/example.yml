@@ -53,7 +53,7 @@ jobs:
         PROJECT_NUMBER=2
 
         # Add issue to project
-        ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner thomasthorntoncloud --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
+        ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner @me --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
         echo "Item ID: $ITEM_ID"
 
         # Convert dates to ISO 8601 format
@@ -72,7 +72,7 @@ jobs:
         echo "Converted End Date: $END_DATE"
 
         # Get field IDs
-        FIELDS=$(gh project field-list $PROJECT_NUMBER --owner thomasthorntoncloud --format json)
+        FIELDS=$(gh project field-list $PROJECT_NUMBER --owner @me --format json)
         START_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "StartDate") | .id')
         END_DATE_FIELD_ID=$(echo "$FIELDS" | jq -r '.[] | select(.name == "EndDate") | .id')
 
