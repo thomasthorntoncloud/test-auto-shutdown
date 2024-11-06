@@ -200,8 +200,8 @@ jobs:
               PAST_11PM=""
           fi
 
-          if [[ "$CURRENT_TITLE" == *"❌"* ]]; then
-            NEW_TITLE=$(echo "$CURRENT_TITLE" | sed 's/❌//g')
+          if [[ "$CURRENT_TITLE" == *"- ❌"* ]]; then
+            NEW_TITLE=$(echo "$CURRENT_TITLE" | sed 's/- ❌//g')
 
             # Update the issue with the new title
             gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
