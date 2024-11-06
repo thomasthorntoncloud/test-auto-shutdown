@@ -50,7 +50,7 @@ jobs:
       if: "!contains(github.event.issue.labels.*.name, 'cancel')"
       run: |
         # Add issue to project
-        gh project item-add 2 --owner thomasthorntoncloud --url ${{ github.event.issue.html_url }}
+        ITEM_ID=$(gh project item-add 2 --owner thomasthorntoncloud --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
         
         # Convert dates to ISO 8601 format
         convert_date() {
@@ -64,9 +64,16 @@ jobs:
         START_DATE=$(convert_date "${{ steps.get_issue_body.outputs.start_date }}")
         END_DATE=$(convert_date "${{ steps.get_issue_body.outputs.end_date }}")
         
+        # Get project ID
+        PROJECT_ID=$(gh project view 2 --owner thomasthorntoncloud --format json | jq -r '.id')
+        
+        # Get field IDs
+        START_DATE_FIELD_ID=$(gh project field-list $PROJECT_ID --format json | jq -r '.[] | select(.name == "StartDate") | .id')
+        END_DATE_FIELD_ID=$(gh project field-list $PROJECT_ID --format json | jq -r '.[] | select(.name == "EndDate") | .id')
+        
         # Update StartDate and EndDate fields
-        gh project item-edit 2 --owner thomasthorntoncloud --id ${{ github.event.issue.node_id }} --field-id StartDate --date "$START_DATE"
-        gh project item-edit 2 --owner thomasthorntoncloud --id ${{ github.event.issue.node_id }} --field-id EndDate --date "$END_DATE"
+        gh project item-edit --project-id $PROJECT_ID --id $ITEM_ID --field-id $START_DATE_FIELD_ID --date "$START_DATE"
+        gh project item-edit --project-id $PROJECT_ID --id $ITEM_ID --field-id $END_DATE_FIELD_ID --date "$END_DATE"
 
     - name: Update issue title
       if: "!contains(github.event.issue.labels.*.name, 'cancel')"
