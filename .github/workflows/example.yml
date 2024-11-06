@@ -206,7 +206,6 @@ jobs:
               PAST_11PM="🕒"
             else
               PAST_11PM="🌙"
-            fi
           fi
 
           # Prepare the new information to append
