@@ -200,7 +200,7 @@ jobs:
               PAST_11PM=""
           fi
 
-          if [[ "$CURRENT_TITLE" != *"❌"* ]]; then
+          if [[ "$CURRENT_TITLE" == *"❌"* ]]; then
             NEW_TITLE=$(echo "$CURRENT_TITLE" | sed 's/❌//g')
 
             # Update the issue with the new title
