@@ -129,42 +129,15 @@ jobs:
           NEW_TITLE="${CURRENT_TITLE} - ❌"
           gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
         fi
-
     - name: Keep only last 5 issues on project board
       run: |
         PROJECT_NUMBER=2
-        OWNER=thomasthorntoncloud
+        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner thomasthorntoncloud --format json | jq -r '.id')
 
-        # Fetch all items from the project
-        ALL_ITEMS=$(gh project item-list $PROJECT_NUMBER --owner $OWNER --format json)
+        ITEMS=$(gh project item-list $PROJECT_ID --format json | jq -r '.items | sort_by(.createdAt) | reverse | .[5:] | .[].id')
 
-        # Check if ALL_ITEMS is not empty
-        if [ -z "$ALL_ITEMS" ]; then
-          echo "No items found in the project."
-          exit 0
-        fi
-
-        # Sort items by creation date and get the total count
-        SORTED_ITEMS=$(echo "$ALL_ITEMS" | jq 'sort_by(.content.createdAt) | reverse')
-        TOTAL_ITEMS=$(echo "$SORTED_ITEMS" | jq length)
-
-        echo "Total items in project: $TOTAL_ITEMS"
-
-        # If there are more than 5 items, remove the oldest ones
-        if [ "$TOTAL_ITEMS" -gt 5 ]; then
-          ITEMS_TO_REMOVE=$((TOTAL_ITEMS - 5))
-          echo "Removing $ITEMS_TO_REMOVE items"
-
-          # Get the IDs of items to remove
-          ITEMS_TO_REMOVE_IDS=$(echo "$SORTED_ITEMS" | jq -r '.[5:] | .[].id')
-
-          # Remove each item
-          for ITEM_ID in $ITEMS_TO_REMOVE_IDS; do
-            gh project item-delete $PROJECT_NUMBER --owner $OWNER --id $ITEM_ID
-            echo "Removed item $ITEM_ID"
-          done
-        else
-          echo "No items to remove. Current count: $TOTAL_ITEMS"
-        fi
+        for ITEM_ID in $ITEMS; do
+          gh project item-remove $PROJECT_ID --id $ITEM_ID
+        done
       env:
         GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
