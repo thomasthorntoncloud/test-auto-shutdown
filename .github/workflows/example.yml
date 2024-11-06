@@ -233,7 +233,13 @@ jobs:
           CURRENT_TITLE=$(gh issue view ${{ github.event.issue.number }} --json title -q .title)
           NEW_TITLE="${CURRENT_TITLE} - ❌"
 
+          if [[ "$CURRENT_TITLE" != *"$NEW_TITLE"* ]]; then
+
           # Update the issue with the new title
           gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
+
+          else
+            echo "Title already contains the required information. No update needed."
+          fi
         env:
           GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
