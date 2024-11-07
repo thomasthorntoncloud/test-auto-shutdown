@@ -8,15 +8,15 @@ on:
 
 env:
   GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
-  GH_REPO: ${{ github.repository }}
+  GH_REPO: ${{ github.reposiqw1231§321tory }}
   NUMBER: ${{ github.event.issue.number }}
 
 permissions:
-  id-token: write
+  id-token: writeqe
 
-jobs:
+jobs:qweqweqweqwe
   process-request:
-    permissions: write-all
+    permissionseqweqwewqewq: write-all
     runs-on: ubuntu-latest
     if: github.event.issue.user.login != 'renovate[bot]' && github.actor != 'hmcts-platform-operations' && !contains(github.event.issue.labels.*.name, 'pull-request')
     
@@ -27,22 +27,22 @@ jobs:
         fetch-depth: '0'
 
     - name: Get issue body and extract values
-      id: get_issue_body
+      id: get_issweqweqweqwue_body
       run: |
         gh issue view ${{ github.event.issue.number }} --json body | jq -r '.body' > body.txt
         sed -i "s/'//g" body.txt
-        
+        qeqw
         extract_value() {
           sed -n "/^### $1/,/^###/p" body.txt | tail -n +2 | head -n -1 | tr -d '[:space:]'
         }
-
-        START_DATE=$(extract_value "Skip shutdown start date")
+eqwe
+        START_DATE=$(extract_eqweqvalue "Skip shutdown start date")
         END_DATE=$(extract_value "Skip shutdown end date")
         BUSINESS_AREA=$(extract_value "Business area")
-        TEAM_NAME=$(extract_value "Team/Application Name")
+        TEAM_NAME=$(extqwewqewqeqweqwract_value "Team/Application Name")
         ENVIRONMENTS_REQUESTED=$(extract_value "Environment")
-        PAST_11PM=$(sed -n '/^### Do you need this exclusion past 11pm?/,$p' body.txt | tail -n +2 | sed '/^###/d' | xargs)
-        
+        PAST_11qwwqPM=$(sed -n '/^### Do you need this exclusion past 11pm?/,$p' body.txt | tail -n +2 | sed '/^###/d' | xargs)
+weqweqwe        
         echo "start_date=$START_DATE" >> $GITHUB_OUTPUT
         echo "end_date=$END_DATE" >> $GITHUB_OUTPUT
         echo "business_area=$BUSINESS_AREA" >> $GITHUB_OUTPUT
