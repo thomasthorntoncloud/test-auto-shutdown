@@ -32,11 +32,15 @@ jobs:
         gh issue view ${{ github.event.issue.number }} --json body | jq -r '.body' > body.txt
         sed -i "s/'//g" body.txt
         
-        START_DATE=$(sed -n '/^### Skip shutdown start date/,/^###/p' body.txt | tail -n +2 | head -n -1 | tr -d '[:space:]')
-        END_DATE=$(sed -n '/^### Skip shutdown end date/,/^###/p' body.txt | tail -n +2 | head -n -1 | tr -d '[:space:]')
-        BUSINESS_AREA=$(sed -n '/^### Business area/,/^###/p' body.txt | tail -n +2 | head -n -1 | tr -d '[:space:]')
-        TEAM_NAME=$(sed -n '/^### Team\/Application Name/,/^###/p' body.txt | tail -n +2 | head -n -1 | tr -d '[:space:]')
-        ENVIRONMENTS_REQUESTED=$(sed -n '/^### Environment/,/^###/p' body.txt | tail -n +2 | head -n -1 | tr -d '[:space:]')
+        extract_value() {
+          sed -n "/^### $1/,/^###/p" body.txt | tail -n +2 | head -n -1 | tr -d '[:space:]'
+        }
+
+        START_DATE=$(extract_value "Skip shutdown start date")
+        END_DATE=$(extract_value "Skip shutdown end date")
+        BUSINESS_AREA=$(extract_value "Business area")
+        TEAM_NAME=$(extract_value "Team/Application Name")
+        ENVIRONMENTS_REQUESTED=$(extract_value "Environment")
         PAST_11PM=$(sed -n '/^### Do you need this exclusion past 11pm?/,$p' body.txt | tail -n +2 | sed '/^###/d' | xargs)
         
         echo "start_date=$START_DATE" >> $GITHUB_OUTPUT
@@ -50,15 +54,15 @@ jobs:
       if: "!contains(github.event.issue.labels.*.name, 'cancel')"
       run: |
         PROJECT_NUMBER=2
+        OWNER=thomasthorntoncloud
 
         # Add issue to project
-        ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner thomasthorntoncloud --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
+        ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner $OWNER --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
         echo "Item ID: $ITEM_ID"
 
         # Get project ID
-        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner thomasthorntoncloud --format json | jq -r '.id')
+        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner $OWNER --format json | jq -r '.id')
         echo "Project ID: $PROJECT_ID"
-
 
         # Convert dates to ISO 8601 format
         convert_date() {
@@ -75,7 +79,7 @@ jobs:
         echo "Converted Start Date: $START_DATE"
         echo "Converted End Date: $END_DATE"
 
-        FIELDS=$(gh project field-list $PROJECT_NUMBER --owner thomasthorntoncloud --format json)
+        FIELDS=$(gh project field-list $PROJECT_NUMBER --owner $OWNER --format json)
 
         echo "All fields:"
         echo "$FIELDS" | jq '.'
@@ -87,10 +91,8 @@ jobs:
         echo "StartDate Field ID: $START_DATE_FIELD_ID"
         echo "EndDate Field ID: $END_DATE_FIELD_ID"
 
-        # Update StartDate field
+        # Update StartDate and EndDate fields
         gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" --field-id "$START_DATE_FIELD_ID" --date "$START_DATE"
-
-        # Update EndDate field
         gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" --field-id "$END_DATE_FIELD_ID" --date "$END_DATE"
 
         echo "Project update completed"
@@ -102,12 +104,12 @@ jobs:
       run: |
         CURRENT_TITLE=$(gh issue view ${{ github.event.issue.number }} --json title -q .title)
         
-          # Check if past 11pm is requested
-          if [[ "${{ steps.get_issue_body.outputs.past_11pm }}" == "No" ]]; then
-              PAST_11PM="🕒"
-            else
-              PAST_11PM=""
-          fi
+        # Check if past 11pm is requested
+        if [[ "${{ steps.get_issue_body.outputs.past_11pm }}" == "No" ]]; then
+          PAST_11PM="🕒"
+        else
+          PAST_11PM=""
+        fi
         
         if [[ "$CURRENT_TITLE" == *"- ❌"* ]]; then
           CURRENT_TITLE=$(echo "$CURRENT_TITLE" | sed 's/- ❌//g')
@@ -129,6 +131,7 @@ jobs:
           NEW_TITLE="${CURRENT_TITLE} - ❌"
           gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
         fi
+
     - name: Keep last 10 issues on project board
       run: |
         PROJECT_NUMBER=2
