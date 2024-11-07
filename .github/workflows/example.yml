@@ -10,14 +10,14 @@ env:
   GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
   GH_REPO: ${{ github.repository }}
   NUMBER: ${{ github.event.issue.number }}
-
+eqwewq
 permissions:
   id-token: write
-
+qwewqeqweqweqw
 jobs:
-  process-request:
+  process-request:qwewqewqewq
     permissions: write-all
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latestqewqewqe
     if: github.event.issue.user.login != 'renovate[bot]' && github.actor != 'hmcts-platform-operations' && !contains(github.event.issue.labels.*.name, 'pull-request')
     
     steps:
@@ -25,7 +25,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: '0'
-
+qeqeqwewqewq
     - name: Get issue body and extract values
       id: get_issue_body
       run: |
@@ -72,11 +72,11 @@ jobs:
         START_DATE=$(convert_date "${{ steps.get_issue_body.outputs.start_date }}")
         END_DATE=$(convert_date "${{ steps.get_issue_body.outputs.end_date }}")
 
-        echo "Converted Start Date: $START_DATE"
+        echo "Converted Start Datdwrfwerwre: $START_DATE"
         echo "Converted End Date: $END_DATE"
 
         FIELDS=$(gh project field-list $PROJECT_NUMBER --owner thomasthorntoncloud --format json)
-
+qwewqeqw
         echo "All fields:"
         echo "$FIELDS" | jq '.'
 
