@@ -10,6 +10,8 @@ env:
   GH_TOKEN: ${{ secrets.ORG_PROJECT_PAT }}
   GH_REPO: ${{ github.repository }}
   NUMBER: ${{ github.event.issue.number }}
+  PROJECT_NUMBER: 2
+  PROJECT_OWNER: thomasthorntoncloud
 
 permissions:
   id-token: write
@@ -49,14 +51,12 @@ jobs:
     - name: Update GitHub Project
       if: "!contains(github.event.issue.labels.*.name, 'cancel')"
       run: |
-        PROJECT_NUMBER=2
 
-        # Add issue to project
-        ITEM_ID=$(gh project item-add $PROJECT_NUMBER --owner thomasthorntoncloud --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
+        ITEM_ID=$(gh project item-add {{ env.PROJECT_NUMBER }} --owner {{ env.PROJECT_OWNER }} --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
         echo "Item ID: $ITEM_ID"
 
         # Get project ID
-        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner thomasthorntoncloud --format json | jq -r '.id')
+        PROJECT_ID=$(gh project view {{ env.PROJECT_NUMBER }} --owner {{ env.PROJECT_OWNER }} --format json | jq -r '.id')
         echo "Project ID: $PROJECT_ID"
 
 
@@ -75,7 +75,7 @@ jobs:
         echo "Converted Start Date: $START_DATE"
         echo "Converted End Date: $END_DATE"
 
-        FIELDS=$(gh project field-list $PROJECT_NUMBER --owner thomasthorntoncloud --format json)
+        FIELDS=$(gh project field-list {{ env.PROJECT_NUMBER }} --owner {{ env.PROJECT_OWNER }} --format json)
 
         echo "All fields:"
         echo "$FIELDS" | jq '.'
@@ -129,17 +129,19 @@ jobs:
           NEW_TITLE="${CURRENT_TITLE} - ❌"
           gh issue edit ${{ github.event.issue.number }} --title "$NEW_TITLE"
         fi
+
+        ITEM_ID=$(gh project item-add {{ env.PROJECT_NUMBER }} --owner {{ env.PROJECT_OWNER }} --url ${{ github.event.issue.html_url }} --format json | jq -r '.id')
+        gh project item-delete {{ env.PROJECT_NUMBER }} --owner {{ env.PROJECT_OWNER }} --id $ITEM_ID
+
     - name: Keep last 10 issues on project board
       run: |
-        PROJECT_NUMBER=2
-        OWNER=thomasthorntoncloud
 
         # Get project ID
-        PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner $OWNER --format json | jq -r '.id')
+        PROJECT_ID=$(gh project view {{ env.PROJECT_NUMBER }} --owner {{ env.PROJECT_OWNER }} --format json | jq -r '.id')
         echo "Project ID: $PROJECT_ID"
 
         # Fetch all items from the project
-        ALL_ITEMS=$(gh project item-list $PROJECT_NUMBER --owner $OWNER --format json)
+        ALL_ITEMS=$(gh project item-list {{ env.PROJECT_NUMBER }} --owner {{ env.PROJECT_OWNER }} --format json)
 
         # Sort items by creation date (newest first) and get IDs of items to remove
         ITEMS_TO_REMOVE=$(echo "$ALL_ITEMS" | jq -r '.items | sort_by(.createdAt) | reverse | .[10:] | .[].id')
@@ -151,7 +153,7 @@ jobs:
         # Remove each item
         for ITEM_ID in $ITEMS_TO_REMOVE; do
           echo "Removing item $ITEM_ID"
-          gh project item-delete $PROJECT_NUMBER --owner $OWNER --id $ITEM_ID
+          gh project item-delete {{ env.PROJECT_NUMBER }} --owner {{ env.PROJECT_OWNER }} --id $ITEM_ID
         done
 
         echo "Cleanup completed. Kept the 10 most recent items."
